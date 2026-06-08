@@ -1,143 +1,85 @@
-import pygame
+import tkinter as tk
+import sys
+from src.config import *
 
-from src.config import (
-    LARGURA_TELA,
-    ALTURA_TELA,
-    FPS,
-    TITULO_JOGO,
-    CINZA,
-    CAMINHO_RECORDE,
-    CAMINHO_SPRITES,
-)
-
-from src.funcoes import (
-    calcular_pontos,
-    jogador_perdeu,
-    limitar_valor,
-    verificar_colisao,
-    tomar_dano,
-)
-from src.sprites import pegar_sprite
-from src.dados import (
-    salvar_recorde,
-    carregar_recorde,
-)
-
+def inicializar_elementos():
+    return {
+        "bits_x": 100,
+        "bits_y": ALTURA_CHAO - 60,
+        "bits_largura": 40,
+        "bits_altura": 60,
+        "vel_y": 0,
+        "no_ar": False,
+        "agachado": False,
+        "obs_x": LARGURA_TELA + 50,
+        "obs_y": ALTURA_CHAO - 40,
+        "obs_largura": 30,
+        "obs_altura": 40,
+        "vel_obs": 6,
+        "altura_original": 60,
+        "y_original": ALTURA_CHAO - 60
+    }
 
 def executar_jogo():
-    """Executa o loop principal do jogo e controla estado, colisões e pontuação."""
-    pygame.init()
-    
+    janela = tk.Tk()
+    janela.title("Pixel Runner: O Último Sinal")
+    janela.geometry(f"{LARGURA_TELA}x{ALTURA_TELA}")
+    janela.resizable(False, False)
 
-    tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
-    pygame.display.set_caption(TITULO_JOGO)
+    canvas = tk.Canvas(janela, width=LARGURA_TELA, height=ALTURA_TELA, bg=COR_FUNDO, highlightthickness=0)
+    canvas.pack()
 
-    relogio = pygame.time.Clock()
-    rodando = True
+    canvas.create_rectangle(0, ALTURA_CHAO, LARGURA_TELA, ALTURA_TELA, fill=COR_CHAO, outline="")
 
-    # 1. Carregando as imagens recortadas do Spritesheet
+    est = inicializar_elementos()
 
+    id_bits = canvas.create_rectangle(est["bits_x"], est["bits_y"], est["bits_x"] + est["bits_largura"], est["bits_y"] + est["bits_altura"], fill=COR_BITS, outline="")
+    id_obs = canvas.create_rectangle(est["obs_x"], est["obs_y"], est["obs_x"] + est["obs_largura"], est["obs_y"] + est["obs_altura"], fill=COR_OBSTACULO, outline="")
 
-    # Jogador: usando tamanho 110x110 para capturar o quadrado perfeitamente
-    player_image = pegar_sprite(CAMINHO_SPRITES, x=110, y=120, width=190, height=190, scale=0.5)
+    def pressionar(event):
+        if event.keysym in ["space", "Up"] and not est["no_ar"] and not est["agachado"]:
+            est["vel_y"] = FORCA_PULO
+            est["no_ar"] = True
+        elif event.keysym == "Down" and not est["no_ar"] and not est["agachado"]:
+            est["agachado"] = True
+            est["bits_altura"] = est["altura_original"] // 2
+            est["bits_y"] = ALTURA_CHAO - est["bits_altura"]
+            canvas.coords(id_bits, est["bits_x"], est["bits_y"], est["bits_x"] + est["bits_largura"], est["bits_y"] + est["bits_altura"])
 
-    # Gema pequena: usando tamanho 64x64
-    gem_image    = pegar_sprite(CAMINHO_SPRITES, x=900, y=690, width=200, height=200, scale=0.5)
+    def soltar(event):
+        if event.keysym == "Down" and est["agachado"]:
+            est["agachado"] = False
+            est["bits_altura"] = est["altura_original"]
+            est["bits_y"] = est["y_original"]
+            canvas.coords(id_bits, est["bits_x"], est["bits_y"], est["bits_x"] + est["bits_largura"], est["bits_y"] + est["bits_altura"])
 
-    # Morcego: usando tamanho 180x120 por causa das asas abertas
-    bat_image    = pegar_sprite(CAMINHO_SPRITES, x=905, y=1060, width=200, height=130, scale=0.5)
-    
-    # 2. Criando a estrutura de Sprites usando Dicionários
-    jogador = {
-        "imagem": player_image,
-        "rect": player_image.get_rect(topleft=(100, 100))
-    }
+    janela.bind("<KeyPress>", pressionar)
+    janela.bind("<KeyRelease>", soltar)
 
-    gema = {
-        "imagem": gem_image,
-        "rect": gem_image.get_rect(topleft=(500, 300))
-    }
-    
-    inimigo = {
-        "imagem": bat_image,
-        "rect": bat_image.get_rect(topleft=(200, 500))
-    }
+    def loop():
+        if est["no_ar"]:
+            est["vel_y"] += GRAVIDADE
+            est["bits_y"] += est["vel_y"]
+            if est["bits_y"] >= est["y_original"]:
+                est["bits_y"] = est["y_original"]
+                est["vel_y"] = 0
+                est["no_ar"] = False
+            canvas.coords(id_bits, est["bits_x"], est["bits_y"], est["bits_x"] + est["bits_largura"], est["bits_y"] + est["bits_altura"])
 
-    velocidade = 5
-    pontos = 0
-    vidas = 3
-    recorde = carregar_recorde(CAMINHO_RECORDE)
+        est["obs_x"] -= est["vel_obs"]
+        if est["obs_x"] < -est["obs_largura"]:
+            est["obs_x"] = LARGURA_TELA + 100
+        canvas.coords(id_obs, est["obs_x"], est["obs_y"], est["obs_x"] + est["obs_largura"], est["obs_y"] + est["obs_altura"])
 
-    # Loop principal: processa entrada, atualiza estado e renderiza a cena.
-    while rodando:
-        relogio.tick(FPS)
+        b_coords = canvas.coords(id_bits)
+        o_coords = canvas.coords(id_obs)
 
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                rodando = False
+        if (b_coords[0] < o_coords[2] and b_coords[2] > o_coords[0] and
+            b_coords[1] < o_coords[3] and b_coords[3] > o_coords[1]):
+            print("Colisão detectada! BITS colidiu.")
+            est["obs_x"] = LARGURA_TELA + 100
 
-        teclas = pygame.key.get_pressed()
+        janela.after(int(1000 / FPS), loop)
 
-        # Movimentação alterando direto os eixos X e Y do retângulo do jogador
-        if teclas[pygame.K_LEFT]:
-            jogador["rect"].x -= velocidade
-        if teclas[pygame.K_RIGHT]:
-            jogador["rect"].x += velocidade
-        if teclas[pygame.K_UP]:
-            jogador["rect"].y -= velocidade
-        if teclas[pygame.K_DOWN]:
-            jogador["rect"].y += velocidade
-
-        # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
-        jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
-        jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
-
-        # Verificação de colisão com a Gema (antigo 'item')
-        if verificar_colisao(jogador["rect"], gema["rect"]):
-            pontos = calcular_pontos(pontos, 10)
-
-            # Move a gema de lugar ao coletar
-            gema["rect"].x += 80
-            gema["rect"].y += 50
-
-            # Se a gema sair da tela, volta para uma posição segura
-            if gema["rect"].x > LARGURA_TELA - gema["rect"].width:
-                gema["rect"].x = 50
-            if gema["rect"].y > ALTURA_TELA - gema["rect"].height:
-                gema["rect"].y = 50
-
-        # Verificação de colisão com o Inimigo
-        if verificar_colisao(jogador["rect"], inimigo["rect"]):
-            vidas = tomar_dano(vidas, 1)
-
-            # Afasta o inimigo ao colidir
-            inimigo["rect"].x += 80
-            inimigo["rect"].y += 50
-
-            if inimigo["rect"].x > LARGURA_TELA - inimigo["rect"].width:
-                inimigo["rect"].x = 50
-            if inimigo["rect"].y > ALTURA_TELA - inimigo["rect"].height:
-                inimigo["rect"].y = 50
-
-        # Regras de fim de jogo e recorde
-        if jogador_perdeu(vidas):
-            rodando = False
-
-        if pontos > recorde:
-            recorde = pontos
-            salvar_recorde(CAMINHO_RECORDE, recorde)
-
-        pygame.display.set_caption(
-            f"{TITULO_JOGO} | Pontos: {pontos} | Recorde: {recorde} | Vidas: {vidas}"
-        )
-
-        tela.fill(CINZA)
-
-        # Desenhando os elementos na tela passando a imagem e o rect de cada dicionário
-        tela.blit(gema["imagem"], gema["rect"])
-        tela.blit(inimigo["imagem"], inimigo["rect"])
-        tela.blit(jogador["imagem"], jogador["rect"])
-
-        pygame.display.flip()
-
-    pygame.quit()
+    loop()
+    janela.mainloop()

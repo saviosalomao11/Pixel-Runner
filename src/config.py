@@ -1,13 +1,13 @@
-# Configurações centrais do jogo (tela, cores e caminhos de arquivos).
 LARGURA_TELA = 800
-ALTURA_TELA = 600
+ALTURA_TELA = 400
 FPS = 60
-
-TITULO_JOGO = "Projeto Final - Pygame"
-
-BRANCO = (255, 255, 255)
-PRETO = (0, 0, 0)
-CINZA = (212,212,212)
+COR_FUNDO = "#1E1E28"
+COR_BITS = "#00FF64"
+COR_OBSTACULO = "#FF3232"
+COR_CHAO = "#646464"
+GRAVIDADE = 0.6
+FORCA_PULO = -12
+ALTURA_CHAO = 350
 
 CAMINHO_RECORDE = "data/recorde.txt"
 CAMINHO_SPRITES = "assets/imagens/spritesheet.bmp"
