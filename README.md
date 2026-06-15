@@ -1,72 +1,69 @@
-# Nome do Jogo
+# Pixel Runner: O Ultimo Sinal
 
-Projeto final da disciplina de Introdução a Algoritmos/Programação, desenvolvido com Python e Pygame.
-
-Este repositório é um template para os grupos da disciplina. A proposta é começar com uma base funcional e evoluir o jogo ao longo do semestre.
+Projeto final da disciplina de Introducao a Algoritmos/Programacao, desenvolvido com Python e Pygame.
 
 ## Integrantes do grupo
 
-- Nome do integrante 1
-- Nome do integrante 2
-- Nome do integrante 3
-- Nome do integrante 4
+- Savio Jose Salomao Ferreira da Silva
+- Arthur Willian Goncalves Domingues
+- Rodrigo Freitas Ribeiro Costa
 
-## Estrutura do projeto
+## Descricao do jogo
 
-- `main.py`: ponto de entrada da aplicação.
-- `src/`: código-fonte principal do jogo (loop, regras, sprites e dados).
-- `assets/`: imagens, fontes e sons.
-- `data/`: arquivos persistentes (recorde/ranking).
-- `tests/`: testes unitários com `pytest`.
-- `docs/`: documentação do projeto, incluindo proposta inicial.
-
-## Descrição do jogo
-
-Descreva brevemente a ideia principal do jogo.
-
-Exemplo:
-
-> O jogo consiste em controlar um personagem que deve coletar moedas e evitar obstáculos. O jogador ganha pontos ao coletar itens e perde vidas ao colidir com obstáculos. A partida termina quando o tempo acaba ou quando o jogador perde todas as vidas.
+Pixel Runner e um jogo de corrida com obstaculos. O jogador controla BITS, um robo explorador branco e azul que precisa chegar a nave de resgate antes de perder todas as vidas. Durante a corrida aparecem fissuras no chao, rochas suspensas e celulas de energia.
 
 ## Objetivo do jogador
 
-Explique o que o jogador precisa fazer para vencer ou avançar no jogo.
-
-Exemplo:
-
-> O objetivo é coletar a maior quantidade possível de itens antes que o tempo acabe, evitando colisões com os obstáculos.
+Percorrer 1000 metros, desviar dos obstaculos e manter pelo menos 1 vida ate o fim da fase. A pontuacao aumenta com a distancia percorrida e tambem com a coleta de celulas de energia.
 
 ## Regras do jogo
 
-Liste as principais regras do jogo.
+- O mapa avanca automaticamente da esquerda para a direita e nunca retrocede.
+- BITS pode se mover para frente e para tras na tela; mover para frente tambem acelera o avanco no mapa, mas mover para tras nao faz o mapa (e a distancia percorrida) retroceder.
+- Fissuras no chao devem ser evitadas pulando.
+- Rochas suspensas devem ser evitadas agachando.
+- Cada colisao remove 1 vida.
+- O jogador comeca com 3 vidas.
+- Coletar uma celula de energia concede 50 pontos e aumenta a velocidade por alguns segundos.
+- A velocidade aumenta a cada 200 metros.
+- A partida termina em vitoria ao chegar a 1000 metros.
+- A partida termina em derrota quando as vidas chegam a 0.
+- O recorde de pontuacao e salvo em `data/recorde.txt`.
 
-Exemplo:
+## Telas do jogo
 
-- O jogador se movimenta usando as setas do teclado.
-- Cada item coletado aumenta a pontuação.
-- Colidir com um obstáculo reduz a quantidade de vidas.
-- A partida termina quando o jogador perde todas as vidas ou quando o tempo acaba.
+- **Menu inicial**: tela de "Start Game" com titulo, instrucoes e recorde. Pressione `ESPACO` ou `ENTER` para comecar.
+- **Pausa**: pressione `P` ou `ESC` durante a partida para pausar/retomar (funciona como "Resume").
+- **Fim de jogo**: tela de vitoria ou derrota com a pontuacao final.
 
 ## Controles
 
-Informe as teclas ou comandos utilizados no jogo.
+- `SETA PARA CIMA` ou `ESPACO`: pular
+- `SETA PARA BAIXO` ou `S`: agachar
+- `SETA PARA DIREITA` ou `D`: mover para frente (avanca no mapa)
+- `SETA PARA ESQUERDA` ou `A`: mover para tras (nao retrocede o mapa)
+- `P` ou `ESC`: pausar/retomar o jogo
+- `R`: reiniciar depois da vitoria ou derrota
+- `ESC`: sair do jogo (no menu ou apos vitoria/derrota)
 
-Exemplo:
+## Estrutura do projeto
 
-- Seta para cima: mover para cima
-- Seta para baixo: mover para baixo
-- Seta para esquerda: mover para esquerda
-- Seta para direita: mover para direita
-- Espaço: realizar ação
-- ESC: sair do jogo
+- `main.py`: ponto de entrada da aplicacao.
+- `src/jogo.py`: loop principal, eventos, desenho, regras e interacoes do jogo.
+- `src/funcoes.py`: funcoes de logica usadas pelo jogo e pelos testes.
+- `src/dados.py`: leitura e escrita do recorde.
+- `src/config.py`: constantes de tela, cores, pontuacao, vidas e caminhos.
+- `data/`: arquivos persistentes, como recorde e ranking.
+- `tests/`: testes unitarios com `pytest`.
+- `docs/proposta.MD`: proposta inicial do jogo.
 
-## Como executar o projeto
+## Conceitos utilizados
 
-### 1. Clonar o repositório
+O projeto utiliza variaveis, condicionais, lacos, listas de obstaculos, dicionarios para o estado do jogo, funcoes, modularizacao, leitura e escrita de arquivo e testes automatizados para funcoes de logica.
+
+## Como executar
 
 ```bash
-git clone LINK_DO_REPOSITORIO
-cd NOME_DA_PASTA
 pip install -r requirements.txt
 python main.py
 ```
@@ -77,15 +74,12 @@ python main.py
 python -m pytest
 ```
 
-## Checklist mínimo para entrega
+## Assets e recursos externos
 
-- Preencher este README com nome final, descrição real, regras e controles do jogo.
-- Atualizar `docs/proposta.MD` com a proposta do grupo.
-- Garantir que o jogo executa com `python main.py`.
-- Garantir que os testes passam com `pytest`.
+O projeto mantem a estrutura de assets do template oficial da disciplina e utiliza recursos livres indicados no material de apoio:
 
-## Observações para os alunos
+- `assets/kenney/new-platformer-pack/`: recortes de terreno, coracoes, gema, espinhos, inimigo/bloco e sons do pacote **New Platformer Pack**, criado por Kenney.
+- Origem: https://kenney.nl/assets/new-platformer-pack
+- Licenca: Creative Commons Zero (CC0), conforme `assets/kenney/new-platformer-pack/License.txt`.
 
-- Mantenham o código organizado em módulos pequenos e com responsabilidade clara.
-- Comentem partes importantes da lógica, principalmente regras do jogo.
-- Registrem decisões técnicas no README do grupo ao longo do desenvolvimento.
+O robo BITS, o planeta, a nave de resgate, o ceu estrelado, a barra de progresso, o menu e o HUD foram desenhados diretamente no codigo com funcoes do Pygame, usando uma paleta de azuis/cinzas inspirada na arte de referencia do personagem.
