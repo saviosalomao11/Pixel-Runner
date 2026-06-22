@@ -41,7 +41,6 @@ from src.dados import atualizar_recorde, carregar_recorde
 from src.funcoes import (
     avancar_distancia,
     calcular_pontos,
-    calcular_pontos_por_distancia,
     calcular_velocidade,
     jogador_perdeu,
     jogador_venceu,
@@ -51,6 +50,37 @@ from src.funcoes import (
 )
 
 PASTA_SPRITES = os.path.join("assets", "imagens", "bits")
+PASTA_SONS = os.path.join("assets", "sons")
+SOM_ARQUIVOS = {
+    "jump": "jump.wav",
+    "coin": "coin.wav",
+    "energy": "energy.wav",
+    "crystal": "crystal.wav",
+    "hit_metal": "hit_metal.wav",
+    "hit_spike": "hit_spike.wav",
+    "hit_laser": "hit_laser.wav",
+    "explosion": "explosion.wav",
+    "splash": "splash.wav",
+    "start": "start.wav",
+    "pause": "pause.wav",
+    "vitoria": "victory.wav",
+    "derrota": "defeat.wav",
+}
+SOM_VOLUME = {
+    "jump": 0.28,
+    "coin": 0.30,
+    "energy": 0.28,
+    "crystal": 0.30,
+    "hit_metal": 0.34,
+    "hit_spike": 0.32,
+    "hit_laser": 0.32,
+    "explosion": 0.38,
+    "splash": 0.30,
+    "start": 0.24,
+    "pause": 0.22,
+    "vitoria": 0.34,
+    "derrota": 0.32,
+}
 
 
 def criar_estado():
@@ -66,7 +96,6 @@ def criar_estado():
         "virado_esquerda": False,
         "vidas": VIDAS_INICIAIS,
         "pontos": 0,
-        "bonus_pontos": 0,
         "distancia": 0,
         "meta": META_DISTANCIA,
         "velocidade": 6,
@@ -153,6 +182,7 @@ def reiniciar_estado(estado):
 def finalizar_partida(estado, resultado):
     estado["resultado"] = resultado
     estado["recorde"] = atualizar_recorde(CAMINHO_RECORDE, estado["pontos"])
+    tocar_som(estado, resultado)
 
 
 def carregar_imagem(nome):
@@ -166,10 +196,25 @@ def carregar_lista(nomes):
     return [imagem for imagem in [carregar_imagem(nome) for nome in nomes] if imagem is not None]
 
 
+def carregar_sons():
+    sons = {}
+    try:
+        if not pygame.mixer.get_init():
+            pygame.mixer.init()
+        for nome, arquivo in SOM_ARQUIVOS.items():
+            caminho = os.path.join(PASTA_SONS, arquivo)
+            if os.path.exists(caminho):
+                sons[nome] = pygame.mixer.Sound(caminho)
+                sons[nome].set_volume(SOM_VOLUME.get(nome, 0.3))
+    except pygame.error:
+        sons = {}
+    return sons
+
+
 def carregar_assets():
     imagens = {
         "bits_parado": carregar_lista(["bits_parado"]),
-        "bits_correndo": carregar_lista(["bits_correr1", "bits_correr2", "bits_correr3", "bits_correr4", "bits_correr5", "bits_corrida_extra", "bits_dash"]),
+        "bits_correndo": carregar_lista(["bits_correr1", "bits_correr3", "bits_correr4", "bits_correr5"]),
         "bits_pulando": carregar_lista(["bits_pulo"]),
         "bits_agachado": carregar_lista(["bits_agachado", "bits_agachado2"]),
         "bits_dano": carregar_lista(["bits_dano"]),
@@ -198,17 +243,7 @@ def carregar_assets():
         "base": carregar_imagem("plataforma_base"),
         "bloco": carregar_lista(["bloco_porta", "bloco_final"]),
     }
-    sons = {}
-    try:
-        if not pygame.mixer.get_init():
-            pygame.mixer.init()
-        for nome, arquivo in {"jump": "sfx_jump.ogg", "gem": "sfx_gem.ogg", "hurt": "sfx_hurt.ogg"}.items():
-            caminho = os.path.join("assets", "kenney", "new-platformer-pack", "sounds", arquivo)
-            if os.path.exists(caminho):
-                sons[nome] = pygame.mixer.Sound(caminho)
-                sons[nome].set_volume(0.35)
-    except pygame.error:
-        sons = {}
+    sons = carregar_sons()
     return {"imagens": imagens, "sons": sons}
 
 
@@ -216,6 +251,18 @@ def tocar_som(estado, nome):
     som = (estado.get("assets") or {}).get("sons", {}).get(nome)
     if som is not None:
         som.play()
+
+
+def som_colisao_obstaculo(tipo, explodindo=False):
+    if tipo in ("missil", "bomba") or explodindo:
+        return "explosion"
+    if tipo in ("laser_azul", "laser_vermelho", "laser_curto", "bola_energia", "drone"):
+        return "hit_laser"
+    if tipo == "agua":
+        return "splash"
+    if tipo in ("espinhos", "espinhos_altos"):
+        return "hit_spike"
+    return "hit_metal"
 
 
 def processar_eventos(estado):
@@ -226,19 +273,31 @@ def processar_eventos(estado):
             if evento.key == pygame.K_ESCAPE:
                 if estado["resultado"] == "jogando":
                     estado["resultado"] = "pausado"
+                    tocar_som(estado, "pause")
+                    continue
                 elif estado["resultado"] == "pausado":
                     estado["resultado"] = "jogando"
+                    tocar_som(estado, "start")
+                    continue
                 else:
                     return False
             if estado["resultado"] == "menu" and evento.key in (pygame.K_SPACE, pygame.K_RETURN):
                 estado["resultado"] = "jogando"
+                tocar_som(estado, "start")
+                continue
             if estado["resultado"] == "pausado" and evento.key in (pygame.K_SPACE, pygame.K_RETURN, pygame.K_p):
                 estado["resultado"] = "jogando"
+                tocar_som(estado, "start")
+                continue
             if estado["resultado"] not in ("jogando",) and evento.key == pygame.K_r:
                 reiniciar_estado(estado)
+                tocar_som(estado, "start")
+                continue
             if estado["resultado"] == "jogando":
                 if evento.key == pygame.K_p:
                     estado["resultado"] = "pausado"
+                    tocar_som(estado, "pause")
+                    continue
                 if evento.key in (pygame.K_SPACE, pygame.K_UP) and not estado["no_ar"] and not estado["agachado"]:
                     estado["vel_y"] = FORCA_PULO
                     estado["no_ar"] = True
@@ -263,13 +322,17 @@ def processar_eventos(estado):
 
 
 def atualizar_jogador(estado):
-    if estado["no_ar"]:
+    if estado["no_ar"] or estado["jogador"].bottom < ALTURA_CHAO:
         estado["vel_y"] += GRAVIDADE
         estado["jogador"].y += int(estado["vel_y"])
         if estado["jogador"].bottom >= ALTURA_CHAO:
             estado["jogador"].bottom = ALTURA_CHAO
             estado["vel_y"] = 0
             estado["no_ar"] = False
+    elif estado["jogador"].bottom > ALTURA_CHAO:
+        estado["jogador"].bottom = ALTURA_CHAO
+        estado["vel_y"] = 0
+        estado["no_ar"] = False
     deslocamento_extra = 0
     if estado["movendo_direita"] and not estado["movendo_esquerda"]:
         estado["jogador"].x += VELOCIDADE_JOGADOR
@@ -297,19 +360,19 @@ def atualizar_mundo(estado, agora):
         estado["fase_final"] = True
         estado["obstaculos"].clear()
         estado["itens"].clear()
-        estado["nave_rect"] = pygame.Rect(595, ALTURA_CHAO - 118, 185, 108)
+        estado["nave_rect"] = pygame.Rect(595, ALTURA_CHAO - 108, 185, 108)
         return
     permitir_perigos = estado["distancia"] < estado["meta"] - 90
     if permitir_perigos and agora >= estado["proximo_obstaculo"]:
         estado["obstaculos"].append(criar_obstaculo(agora))
-        estado["proximo_obstaculo"] = agora + random.randint(900, 1450)
+        estado["proximo_obstaculo"] = agora + random.randint(1500, 2400)
     if agora >= estado["proximo_item"] and estado["distancia"] < estado["meta"] - 70:
-        quantidade = 1 if random.randint(1, 100) > 18 else 2
+        quantidade = 1 if random.randint(1, 100) > 5 else 2
         for i in range(quantidade):
             item = criar_item()
             item["rect"].x += i * 46
             estado["itens"].append(item)
-        estado["proximo_item"] = agora + random.randint(1700, 3200)
+        estado["proximo_item"] = agora + random.randint(2600, 4300)
     for obstaculo in estado["obstaculos"]:
         tipo = obstaculo["tipo"]
         velocidade_extra = 4 if tipo in ("missil", "laser_azul", "laser_vermelho", "laser_curto", "bola_energia") else 0
@@ -318,31 +381,44 @@ def atualizar_mundo(estado, agora):
             centro = obstaculo["rect"].center
             obstaculo["explodindo_ate"] = agora + 520
             obstaculo["rect"] = pygame.Rect(centro[0] - 42, ALTURA_CHAO - 84, 84, 78)
+            tocar_som(estado, "explosion")
     estado["obstaculos"] = [obs for obs in estado["obstaculos"] if obs["rect"].right > 0 and not (obs["tipo"] == "bomba" and obs.get("explodindo_ate", 0) and agora > obs["explodindo_ate"])]
     for item in estado["itens"]:
         item["rect"].x -= estado["velocidade"]
     estado["itens"] = [item for item in estado["itens"] if item["rect"].right > 0]
-    estado["pontos"] = calcular_pontos_por_distancia(estado["distancia"]) + estado["bonus_pontos"]
+
+
+def obter_retangulo_colisao_jogador(estado):
+    retangulo = estado["jogador"].copy()
+    if estado["agachado"]:
+        return retangulo.inflate(-8, -6)
+    return retangulo.inflate(-10, -8)
 
 
 def verificar_interacoes(estado, agora):
+    hitbox_jogador = obter_retangulo_colisao_jogador(estado)
     itens_restantes = []
     for item in estado["itens"]:
-        if verificar_colisao(estado["jogador"], item["rect"]):
+        if verificar_colisao(hitbox_jogador, item["rect"]):
             tipo = item.get("tipo")
             ganho = PONTOS_ENERGIA
             if tipo == "moeda_ouro":
                 ganho = PONTOS_ENERGIA * 2
                 estado["moedas_coletadas"] += 1
+                som_item = "coin"
             elif tipo == "cristal":
                 ganho = PONTOS_ENERGIA * 3
                 estado["vidas"] = min(VIDAS_INICIAIS, estado["vidas"] + 1)
                 estado["cristais_coletados"] += 1
+                som_item = "crystal"
             elif tipo == "energia":
                 estado["energias_coletadas"] += 1
-            estado["bonus_pontos"] = calcular_pontos(estado["bonus_pontos"], ganho)
-            estado["pontos"] = calcular_pontos_por_distancia(estado["distancia"]) + estado["bonus_pontos"]
-            tocar_som(estado, "gem")
+                estado["bonus_ate"] = agora + BONUS_VELOCIDADE_MS
+                som_item = "energy"
+            else:
+                som_item = "energy"
+            estado["pontos"] = calcular_pontos(estado["pontos"], ganho)
+            tocar_som(estado, som_item)
         else:
             itens_restantes.append(item)
     estado["itens"] = itens_restantes
@@ -352,12 +428,12 @@ def verificar_interacoes(estado, agora):
             bomba_armada = tipo == "bomba" and obstaculo.get("explodindo_ate", 0) == 0
             if bomba_armada:
                 continue
-            if verificar_colisao(estado["jogador"], obstaculo["rect"]):
+            if verificar_colisao(hitbox_jogador, obstaculo["rect"]):
                 dano = 2 if tipo == "bomba" and obstaculo.get("explodindo_ate", 0) else 1
                 estado["vidas"] = tomar_dano(estado["vidas"], dano)
                 estado["invencivel_ate"] = agora + INVENCIVEL_MS
                 obstaculo["rect"].right = 0
-                tocar_som(estado, "hurt")
+                tocar_som(estado, som_colisao_obstaculo(tipo, obstaculo.get("explodindo_ate", 0) > 0))
                 break
     if jogador_perdeu(estado["vidas"]):
         finalizar_partida(estado, "derrota")
@@ -429,9 +505,9 @@ def desenhar_robo(tela, rect, agachado, piscando, estado, agora):
         lista = imagens.get("bits_parado", [])
     imagem = escolher_frame(lista, agora)
     if imagem is not None:
-        area = pygame.Rect(rect.x - 17, rect.bottom - 68, 78, 68)
+        area = pygame.Rect(rect.x - 10, rect.bottom - 70, 60, 70)
         if agachado:
-            area = pygame.Rect(rect.x - 22, rect.bottom - 46, 86, 46)
+            area = pygame.Rect(rect.x - 13, rect.bottom - 46, 66, 46)
         desenhar_imagem(tela, imagem, area, estado.get("virado_esquerda", False))
         return
     pygame.draw.rect(tela, COR_BITS_DETALHE, rect, border_radius=8)

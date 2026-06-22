@@ -1,13 +1,15 @@
 # Imagens
 
-Pasta destinada a sprites, fundos, icones e outros elementos visuais.
+Esta pasta guarda os recursos visuais do jogo.
 
-## Conteudo atual
+## Arquivos principais
 
+- `fundo_bits.png`: fundo da fase.
+- `nave_final.png`: nave de resgate mostrada no final.
+- `bits_spritesheet.png`: spritesheet auxiliar do personagem.
 - `spritesheet.bmp`: spritesheet base do template.
+- `bits/`: imagens separadas do personagem, itens, obstaculos e partes do cenario.
 
-## Recomendações
+## Uso no jogo
 
-- Separe imagens por tema quando o projeto crescer.
-- Mantenha dimensoes e padroes consistentes para facilitar colisao e animacao.
-- Prefira formatos com transparencia quando necessario (ex.: `.png`).
+As imagens sao carregadas em `src/jogo.py` e desenhadas com Pygame. Os arquivos em `bits/` sao usados para animar BITS, desenhar obstaculos, mostrar itens coletaveis e montar partes do cenario.

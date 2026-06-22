@@ -1,14 +1,22 @@
+from pathlib import Path
+
 from src.dados import atualizar_recorde, carregar_recorde
 from src.funcoes import (
     avancar_distancia,
     calcular_pontos,
-    calcular_pontos_por_distancia,
     calcular_velocidade,
     jogador_perdeu,
     jogador_venceu,
     limitar_valor,
     tomar_dano,
 )
+
+
+def caminho_recorde_teste():
+    caminho = Path("data") / "recorde_teste.txt"
+    if caminho.exists():
+        caminho.unlink()
+    return caminho
 
 
 def test_calcular_pontos():
@@ -53,20 +61,17 @@ def test_calcular_velocidade_aumenta_a_cada_200_metros():
     assert calcular_velocidade(450) == 8
 
 
-def test_calcular_pontos_por_distancia():
-    assert calcular_pontos_por_distancia(123.8) == 123
-
-
-def test_recorde_carrega_zero_quando_arquivo_nao_existe(tmp_path):
-    caminho = tmp_path / "recorde.txt"
+def test_recorde_carrega_zero_quando_arquivo_nao_existe():
+    caminho = caminho_recorde_teste()
     assert carregar_recorde(caminho) == 0
 
 
-def test_atualizar_recorde_mantem_maior_pontuacao(tmp_path):
-    caminho = tmp_path / "recorde.txt"
+def test_atualizar_recorde_mantem_maior_pontuacao():
+    caminho = caminho_recorde_teste()
     assert atualizar_recorde(caminho, 200) == 200
     assert atualizar_recorde(caminho, 150) == 200
     assert carregar_recorde(caminho) == 200
+    caminho.unlink()
 
 
 def test_avancar_distancia_com_deslocamento_positivo():
@@ -79,3 +84,10 @@ def test_avancar_distancia_nao_retrocede_com_deslocamento_negativo():
 
 def test_avancar_distancia_com_deslocamento_zero():
     assert avancar_distancia(100, 0) == 100
+
+
+def test_pontuacao_soma_apenas_itens_coletados():
+    pontos = 0
+    pontos = calcular_pontos(pontos, 50)
+    pontos = calcular_pontos(pontos, 100)
+    assert pontos == 150

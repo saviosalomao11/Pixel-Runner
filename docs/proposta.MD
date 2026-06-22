@@ -1,6 +1,6 @@
-# Proposta Inicial do Jogo
+# Proposta Final do Jogo
 
-## 1. Nome provisorio do jogo
+## 1. Nome do jogo
 
 Pixel Runner: O Ultimo Sinal
 
@@ -12,70 +12,175 @@ Pixel Runner: O Ultimo Sinal
 
 ## 3. Tipo de jogo
 
-Jogo de desviar de obstaculos, no estilo corrida com pulo e agachamento.
+Jogo 2D de corrida com obstaculos, coleta de itens, pulo, agachamento, pontuacao, vidas e fase com final definido.
 
-## 4. Descricao geral
+## 4. Ideia geral
 
-O jogador controla BITS, um robo explorador que corre automaticamente por um planeta em colapso. Para chegar a nave de resgate, BITS precisa desviar de fissuras no chao e rochas suspensas, alem de coletar celulas de energia que aumentam a pontuacao.
+O jogador controla BITS, um robo explorador que esta preso em uma base em ruinas. Para escapar, ele precisa correr ate a nave de resgate, desviando de obstaculos e coletando itens pelo caminho.
+
+A fase avanca automaticamente. O jogador precisa reagir aos perigos usando pulo, agachamento e movimentacao lateral. A partida termina quando BITS chega ate a nave ou quando perde todas as vidas.
 
 ## 5. Objetivo do jogador
 
-Percorrer 1000 metros ate a nave de resgate sem perder todas as 3 vidas.
+Chegar a 1000 metros de distancia e encostar na nave de resgate com pelo menos 1 vida.
 
-## 6. Regras principais
+O jogador tambem pode tentar fazer uma pontuacao maior coletando itens. A pontuacao e salva como recorde quando for maior que a pontuacao anterior.
 
-- BITS corre automaticamente.
-- O jogador pula para evitar fissuras no chao.
-- O jogador agacha para evitar rochas suspensas.
-- Cada colisao remove 1 vida.
-- Celulas de energia concedem 50 pontos e um bonus temporario de velocidade.
-- A velocidade aumenta a cada 200 metros percorridos.
-- A partida termina quando BITS chega a 1000 metros ou perde todas as vidas.
+## 6. Regras do jogo
 
-## 7. Condicao de vitoria
+- BITS comeca com 3 vidas.
+- O mapa avanca automaticamente.
+- O jogador pode andar para esquerda e direita dentro da tela.
+- O jogador pode pular.
+- O jogador pode agachar.
+- Obstaculos causam dano.
+- Depois de sofrer dano, BITS fica invencivel por um curto tempo.
+- Energia vale 50 pontos.
+- Moeda de ouro vale 100 pontos.
+- Cristal vale 150 pontos e recupera 1 vida.
+- A pontuacao aumenta apenas quando o jogador coleta itens.
+- A velocidade aumenta gradualmente durante a fase.
+- A partida termina em vitoria quando BITS chega na nave.
+- A partida termina em derrota quando as vidas chegam a 0.
 
-O jogador vence quando a distancia chega a 1000 metros com pelo menos 1 vida restante. A tela final mostra a mensagem "BITS foi resgatado!" e a pontuacao final.
-
-## 8. Condicao de derrota ou encerramento
-
-O jogador perde quando as vidas chegam a 0. A tela de Game Over mostra a pontuacao final e permite reiniciar com `R` ou sair com `ESC`.
-
-## 9. Elementos previstos
-
-- Jogador: BITS, representado por um personagem verde do pacote Kenney New Platformer Pack.
-- Obstaculos: fissuras/espinhos no chao e blocos suspensos.
-- Itens: celulas de energia coletaveis representadas por uma gema azul.
-- Indicadores: pontos, vidas com icones de coracao, distancia, barra de progresso e recorde.
-
-## 10. Controles previstos
+## 7. Controles
 
 - `ESPACO` ou `SETA PARA CIMA`: pular.
 - `S` ou `SETA PARA BAIXO`: agachar.
-- `R`: reiniciar apos vitoria ou derrota.
-- `ESC`: sair do jogo.
+- `D` ou `SETA PARA DIREITA`: andar para frente.
+- `A` ou `SETA PARA ESQUERDA`: andar para tras.
+- `P`: pausar ou continuar.
+- `ESC`: pausar durante o jogo ou sair fora da partida.
+- `R`: reiniciar depois da vitoria ou derrota.
 
-## 11. Estruturas de dados utilizadas
+## 8. Elementos do jogo
 
-- Dicionario para armazenar o estado geral da partida.
-- Lista para armazenar os obstaculos ativos.
-- Retangulos do Pygame para colisao entre jogador, obstaculos e itens.
+### Jogador
 
-## 12. Uso previsto de arquivos
+BITS e o personagem controlado pelo jogador. Ele possui animacoes para corrida, pulo, agachamento e dano.
 
-O arquivo `data/recorde.txt` guarda a maior pontuacao obtida. As funcoes de leitura e escrita estao no modulo `src/dados.py`.
+### Obstaculos
 
-Tambem sao utilizados assets livres do pacote Kenney New Platformer Pack, armazenados em `assets/kenney/new-platformer-pack/`, com licenca CC0 registrada no README.
+O jogo possui varios tipos de obstaculos:
 
-## 13. Testes planejados
+- Espinhos.
+- Rochas.
+- Robo inimigo.
+- Drone.
+- Lasers.
+- Bola de energia.
+- Missil.
+- Bomba.
+- Agua.
 
-Os testes cobrem calculo de pontos, dano, derrota, vitoria, limite de valores, aumento de velocidade, pontos por distancia e leitura/escrita de recorde.
+Cada obstaculo exige atencao do jogador, pois pode tirar vida ao colidir com BITS.
 
-## 14. Principais dificuldades esperadas
+### Itens
 
-- Ajustar a fisica do pulo para ficar responsiva.
-- Gerar obstaculos sem deixar o jogo impossivel.
-- Manter pontuacao, vidas, progresso e recorde sincronizados.
+O jogo possui tres tipos principais de itens:
 
-## 15. Escopo minimo para a entrega final
+- Energia: soma pontos e ativa bonus de velocidade.
+- Moeda de ouro: soma mais pontos.
+- Cristal: soma pontos e recupera vida.
 
-Jogo executavel com Pygame, controle por teclado, obstaculos, itens, vidas, pontuacao, progresso, condicao de vitoria, condicao de derrota, recorde salvo em arquivo, README preenchido e testes simples.
+### Audio
+
+O jogo possui sons diferentes para pulo, coleta de itens, impactos, lasers, explosoes, agua, pausa, inicio, vitoria e derrota.
+
+## 9. Telas do jogo
+
+- Menu inicial: mostra o nome do jogo, instrucoes e recorde.
+- Tela principal: mostra a fase, BITS, obstaculos, itens, pontuacao, vidas, distancia e recorde.
+- Tela de pausa: aparece quando o jogador pausa a partida.
+- Tela final: mostra se o jogador venceu ou perdeu, a pontuacao final, itens coletados e recorde.
+
+## 10. Condicao de vitoria
+
+O jogador vence quando chega a 1000 metros, a nave aparece na tela e BITS encosta nela com pelo menos 1 vida.
+
+## 11. Condicao de derrota
+
+O jogador perde quando as vidas chegam a 0.
+
+## 12. Organizacao do codigo
+
+O projeto foi separado em pastas para facilitar a leitura:
+
+- `main.py`: inicia o jogo.
+- `src/jogo.py`: contem o loop principal, eventos, colisao, desenho, sons e regras da partida.
+- `src/config.py`: guarda constantes do jogo.
+- `src/funcoes.py`: guarda funcoes simples de logica.
+- `src/dados.py`: cuida da leitura e escrita do recorde.
+- `assets/`: guarda imagens e sons.
+- `data/`: guarda arquivos de dados.
+- `tests/`: guarda os testes.
+- `docs/`: guarda documentos do projeto.
+
+## 13. Estruturas de dados utilizadas
+
+- Variaveis para guardar pontos, vidas, distancia, velocidade e estado do jogo.
+- Listas para guardar os obstaculos e itens que estao aparecendo na tela.
+- Dicionarios para guardar o estado geral da partida.
+- Retangulos do Pygame para controlar posicao e colisao.
+
+## 14. Leitura e escrita em arquivo
+
+O arquivo `data/recorde.txt` guarda a maior pontuacao obtida.
+
+As funcoes do arquivo `src/dados.py` fazem:
+
+- Leitura do recorde.
+- Gravacao do recorde.
+- Atualizacao somente quando a nova pontuacao e maior.
+
+Esse recurso atende ao requisito de leitura e escrita em arquivo.
+
+## 15. Testes implementados
+
+Os testes estao em `tests/test_logica.py`.
+
+Eles verificam:
+
+- Calculo de pontos.
+- Dano sem deixar vida negativa.
+- Condicao de derrota.
+- Condicao de vitoria.
+- Limitacao de valores.
+- Aumento de velocidade.
+- Avanco de distancia.
+- Leitura e escrita do recorde.
+- Pontuacao apenas por coleta de itens.
+
+Para executar:
+
+```bash
+python -m pytest tests
+```
+
+## 16. Recursos externos utilizados
+
+O projeto utiliza recursos do pacote Kenney New Platformer Pack:
+
+- Site: https://kenney.nl/assets/new-platformer-pack
+- Licenca: Creative Commons Zero (CC0)
+- Licenca local: `assets/kenney/new-platformer-pack/License.txt`
+
+Tambem existem imagens e sons organizados pelo grupo nas pastas `assets/imagens/` e `assets/sons/`.
+
+## 17. Principais desafios
+
+Durante o desenvolvimento, os principais desafios foram:
+
+- Ajustar a movimentacao para o personagem nao flutuar.
+- Controlar a quantidade de obstaculos e itens na tela.
+- Fazer a pontuacao contar apenas pela coleta de itens.
+- Ajustar a colisao para ficar mais justa.
+- Organizar os arquivos em modulos.
+- Criar testes simples para as regras principais.
+- Melhorar os sons para combinar com cada acao do jogo.
+
+## 18. Resultado final
+
+A versao final possui loop principal funcionando, controles por teclado, colisao, itens coletaveis, pontuacao, vidas, vitoria, derrota, recorde salvo em arquivo, sons, imagens, documentacao e testes.
+
+O projeto esta pronto para a entrega final da Semana 4.
