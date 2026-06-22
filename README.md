@@ -1,7 +1,5 @@
 # Pixel Runner: O Ultimo Sinal
 
-Projeto final da Semana 4 da disciplina de Introducao a Algoritmos/Programacao, desenvolvido em Python com Pygame.
-
 ## Integrantes
 
 - Savio Jose Salomao Ferreira da Silva
@@ -94,19 +92,6 @@ python -m pytest tests -p no:cacheprovider
 - `docs/proposta.md`: proposta final do jogo.
 - `tests/test_logica.py`: testes automatizados da logica.
 
-## Requisitos da Semana 4 atendidos
-
-- Jogo completo, funcional e executavel.
-- Codigo-fonte organizado em pastas e modulos.
-- README atualizado.
-- Arquivo `docs/proposta.md` preenchido.
-- Testes simples implementados.
-- Arquivos auxiliares incluidos.
-- Referencias de recursos externos documentadas.
-- Sistema de leitura e escrita em arquivo funcionando.
-- Condicao clara de vitoria e derrota.
-- Colisoes e interacoes funcionando.
-- Projeto pronto para ser compactado em `.zip` e enviado pelo Canvas.
 
 ## Conceitos da disciplina utilizados
 
@@ -147,12 +132,4 @@ Recursos externos utilizados:
 
 Tambem foram usados recursos visuais organizados pelo grupo em `assets/imagens/`, como BITS, fundo, nave, obstaculos e itens. Os sons finais ficam em `assets/sons/` e foram gerados para combinar com a proposta sci-fi/arcade do jogo.
 
-## Principais ajustes da versao final
 
-- Pontuacao corrigida para contar apenas itens coletados.
-- Menos elementos sendo criados ao mesmo tempo no mapa.
-- Movimento de BITS ajustado para nao flutuar.
-- Animacao de corrida ajustada para nao parecer que o personagem duplica.
-- Nave final posicionada corretamente sobre o chao.
-- Sons separados para pulo, coleta, dano, explosao, agua, pausa, vitoria e derrota.
-- Documentacao final revisada para a entrega.
